@@ -1,0 +1,280 @@
+\documentclass{book}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\begin{document}
+
+\title{\TeX4ht\ Template for Online Books}
+\author{Michal Hoftich}
+\maketitle
+\tableofcontents
+
+\chapter{Introduction}
+
+This template is designed to facilitate the export of each book chapter into a
+separate HTML page, making it ideal for publishing books, documentation, or
+lecture notes in a structured and easily navigable web format.
+
+\paragraph{Key Features:}
+
+\begin{itemize}
+  \item Modular Structure: Each chapter is converted into an independent HTML
+    file, improving load times and organization.
+
+  \item Seamless Navigation: Built-in links (previous/next chapter, table of contents in sidebar) ensure smooth reader navigation.
+
+  \item Customizable Styling: Supports CSS theming to match your project’s design (e.g., academic, technical, or minimalist).
+\end{itemize}
+
+\paragraph{Use Cases}
+
+\begin{itemize}
+  \item E-books / Online Textbooks – Publish course materials with chapter-based access.
+
+  \item Technical Documentation – Break long manuals into searchable sections.
+
+  \item Collaborative Projects – Combine multiple authors’ work into a unified web book.
+\end{itemize}
+
+\paragraph{How It Works}
+
+The template uses \href{https://tug.org/tex4ht/}{TeX4ht}, a LaTeX-to-HTML converter, to automate the
+splitting of .tex files while preserving cross-references, footnotes, and
+bibliographies. 
+
+\paragraph{Automation Features}
+\begin{itemize}
+    \item \textbf{GitHub Actions Integration}: 
+    \begin{itemize}
+        \item Automatic compilation triggered on every commit/push to the repository
+        \item Pre-configured workflow handles LaTeX → HTML conversion via \TeX4ht
+        \item Build status monitoring and error reporting
+    \end{itemize}
+    
+    \item \textbf{GitHub Pages Publishing}:
+    \begin{itemize}
+        \item Automatically deploys the compiled HTML output to GitHub Pages
+        \item Creates a publicly accessible website (\texttt{https://yourname.github.io/repository-name})
+        \item Supports custom domains if needed
+    \end{itemize}
+    
+    \item \textbf{Continuous Deployment}:
+    \begin{itemize}
+        \item Ensures the online version always matches the repository content
+    \end{itemize}
+\end{itemize}
+
+\chapter{Basic Usage}
+
+To start your own online book using this template, click the "Use this
+template" button at the top of the
+\href{https://github.com/michal-h21/tex4ht-booksite}{GitHub repository page} (see figure~\ref{fig:template}).
+This will create a new repository in your account with the same structure and
+files. You can then clone it, customize the content, and start building your
+own book.
+
+\begin{figure}[htbp]
+  \includegraphics[width=\textwidth,alt={Image of button for use of this repository as a template}]{img/template-use.png}
+\caption{Using the template to create a new repository}
+\label{fig:template}
+\end{figure}
+
+Your book's core content goes in \texttt{document.tex} (this file currently contains
+sample text that you'll replace with your own work).
+
+For larger projects, we recommend splitting content into separate files (one
+per chapter, for example) and including them using \verb|\include{filename}| commands.
+
+Remember:
+
+\begin{itemize}
+  \item Keep document.tex as your master file
+
+  \item The build process relies on this structure
+
+  \item All \verb|\include| paths should be relative to \texttt{document.tex}
+\end{itemize}
+
+
+\chapter{Compiling the Book}
+
+
+You can compile the output files using any standard \LaTeX\ distribution which includes \href{https://www.tug.org/tex4ht/}{\TeX4ht}.
+
+To compile the PDF version use Lua\LaTeX:
+
+\begin{verbatim}
+$ lualatex document.tex
+\end{verbatim}
+
+For the HTML version, you can use \href{https://github.com/michal-h21/make4ht}{make4ht}, build system for \TeX4ht.
+
+\begin{verbatim}
+$ make4ht -e build.lua -c config.cfg -lj index -d out document.tex
+\end{verbatim}
+
+Since we need both a Lua build script (for make4ht) and a \TeX4ht config file, this command ends up being a bit more involved.
+
+The \verb|-e build.lua| option loads the build file. It modifies the output fil
+The \verb|-l| option  ensures that Lua\LaTeX\ is used as the compiler. 
+
+\chapter{Styling the Output}
+
+Most of the colors used in the template are defined through CSS variables,  
+which can be customized directly in the configuration file.
+
+
+An example how you could  change the output shows the following CSS rule. Add
+the following text to your \texttt{config.cfg} configuration file:
+
+\begin{verbatim}
+\Css{
+  body{
+    --maintoc-background: \#f0f0f0;
+    --maintoc-color: \#00AFA0;
+  }
+}
+\end{verbatim}
+
+The \verb|\Css| command allows you to insert raw CSS rules directly
+into the generated CSS file. The content is not read verbatim, so we need to escape special characters such as \texttt{\#} 
+or \texttt{\%}. Otherwise, they would cause compilation errors. In this case, we need to escape the hash sign
+used in hexadecimal color codes.
+
+Css variables are prefixed with \texttt{--} and can be set in a selector that is active in a whole document, such as \texttt{body}.
+In this example, we set the background and text color of the
+navigation menu. 
+
+\begin{figure}[htbp]
+  \includegraphics[width=\textwidth,alt={Image of customized page design}]{img/book-changecolor.png}
+  \caption{Customized page design with modified colors}
+\end{figure}
+
+
+Supported variables for adjusting the page design are following:
+
+\begin{description}
+  \item[maintoc]  
+    the navigation menu containing the document’s table of contents
+
+  \item[hamburger]  
+    the button used to open the hidden (collapsed) menu
+
+  \item[header]  
+    the top section of the document, typically containing the title or site navigation
+
+  \item[footer]  
+    the bottom section of the document, usually used for metadata or additional links
+\end{description}
+
+For each of these properties, you may define both the foreground and background colors  
+by appending \texttt{-color} and \texttt{-background} to the property name.
+
+
+
+\chapter{Automated HTML Output}
+
+This chapter explains how \href{https://docs.github.com/en/actions/writing-workflows/quickstart}{GitHub Actions}
+is used to automatically generate and publish an HTML version of the handout whenever changes are pushed to the \texttt{main} branch.
+
+The output is built using \texttt{make4ht} and published to the \texttt{gh-pages} branch,
+making it easy to share a web-readable version of the talk.
+
+Key parts of the workflow that builds and publishes the HTML:
+
+\begin{verbatim}
+- name: Run make4ht
+  uses: xu-cheng/texlive-action/full@v1
+  with:
+    run: |
+      make4ht -lj index -a debug -d out book.tex
+
+- name: Publish the web pages
+  uses: peaceiris/actions-gh-pages@v3
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    publish_dir: ./out
+\end{verbatim}
+
+
+
+The workflow is defined in the \texttt{.github/workflows/main.yml} file.
+You can edit this file to customize the build process, such as changing the options passed to \texttt{make4ht}.
+
+It uses two GitHub Actions: \href{https://github.com/xu-cheng/texlive-action}{xu-cheng/texlive-action}
+and \href{https://github.com/peaceiris/actions-gh-pages}{peaceiris/actions-gh-pages}.
+The first one lets you use any command available in the TeX Live installation, such as \texttt{make4ht} or \texttt{lualatex}.
+The second one publishes the contents of a specified directory to the \texttt{gh-pages} branch of your repository,
+which is used by GitHub Pages to serve static content.
+
+
+
+\section{Automatic HTML Build}
+Changes pushed to \texttt{main} branch trigger a GitHub Actions workflow that:
+
+\begin{itemize}
+  \item Compiles \texttt{handout.tex} to HTML using \texttt{make4ht}
+  \item Publishes the output to the \texttt{gh-pages} branch
+\end{itemize}
+
+The following command is used for the compilation:
+
+\begin{verbatim}
+make4ht -lj index -a debug -d out handout.tex
+\end{verbatim}
+
+
+This builds the HTML into the \texttt{out/} folder, which is then published
+using the \texttt{peaceiris/actions-gh-pages} action, specified by the
+\texttt{publish\_dir} setting.
+
+
+\paragraph{Why \texttt{-j index}?}
+\begin{itemize}
+  \item The \texttt{-lj index} option is a shorthand for \texttt{-l -j index}
+  \item The \texttt{-j index} option sets the HTML output filename to \texttt{index.html}
+  \item This lets you use clean URLs like:
+  
+\begin{verbatim}
+https://username.github.io/repo/
+\end{verbatim}
+
+\end{itemize}
+
+
+There’s no need to specify the filename in the link — GitHub Pages
+automatically looks for \texttt{index.html} by default. This makes it easier to share
+the presentation and helps avoid broken links due to filename mismatches.
+
+For example, this book is available at: \url{https://michal-h21.github.io/tex4ht-booksite/}.
+
+\chapter{Github Pages}
+
+\section{Github Actions Interface}
+\includegraphics[width=\textwidth]{img/github-actions.png}
+
+After you push changes to the \texttt{main} branch, you can check the \texttt{Actions} tab in your
+Github repository. It shows the status of the workflow, including whether it ran successfully or if there were any errors.
+
+
+\section{Errors}
+\includegraphics[width=\textwidth]{img/github-error.png}
+
+
+You can also check the logs of the workflow run to see what went wrong.
+If you encounter an error, it will be displayed in the logs, and you can use that
+information to debug the issue.
+
+In this case, the filename of the TeX file was incorrect. I had to fix the filename in the GitHub Actions YAML file.
+
+
+\section{Setup Github Pages}
+\includegraphics[width=\textwidth]{img/github-pages.png}
+
+Once the workflow runs successfully, you can set up GitHub Pages to serve the \texttt{gh-pages} branch.
+
+All output files produced by \texttt{make4ht} will be served on the web.
+They will be available at:
+\verb|https://username.github.io/repo/|,
+where \texttt{username} is your GitHub username and \texttt{repo} is the name of your repository.
+\end{document}
